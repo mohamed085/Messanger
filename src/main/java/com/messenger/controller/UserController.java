@@ -22,11 +22,11 @@ public class UserController {
                 .body(userService.getAuthenticatedAccount());
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers() {
+    @GetMapping("/discover-new-friends")
+    public ResponseEntity<?> discoverNewFriends() {
         return ResponseEntity
                 .ok()
-                .body(userService.getAllUsers());
+                .body(userService.discoverNewFriends());
     }
 
     @GetMapping("/add-friend/{id}")
@@ -36,6 +36,25 @@ public class UserController {
                 .body(userService.addNewFriend(friendId));
     }
 
+    @GetMapping("/friend-requests")
+    public ResponseEntity<?> getAllFriendRequests() {
+        return ResponseEntity
+                .ok()
+                .body(userService.getAllFriendRequests());
+    }
 
+    @GetMapping("/accept-requests/{id}")
+    public ResponseEntity<?> acceptFriendRequest(@PathVariable("id") Long friendId) {
+        return ResponseEntity
+                .ok()
+                .body(userService.acceptFriendRequest(friendId));
+    }
+
+    @GetMapping("/reject-requests/{id}")
+    public ResponseEntity<?> rejectFriendRequest(@PathVariable("id") Long friendId) {
+        return ResponseEntity
+                .ok()
+                .body(userService.rejectFriendRequest(friendId));
+    }
 
 }

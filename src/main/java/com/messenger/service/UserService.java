@@ -16,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -76,14 +77,38 @@ public class UserService {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository.findByEmail(userEmail).get();
+        user.getFriends().forEach(user1 -> {
+            user1.setRequests(null);
+            user1.setFriends(null);
+        });
+
+        user.getRequests().forEach(user1 -> {
+            user1.setRequests(null);
+            user1.setFriends(null);
+        });
+
         return user;
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<User> discoverNewFriends() {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User loginUser = userRepository.findByEmail(userEmail).get();
+
+        List<User> users = new ArrayList<>();
+
+        userRepository.findAll().forEach(user -> {
+            user.setFriends(null);
+            user.setRequests(null);
+            if (!user.getId().equals(loginUser.getId())) {
+                users.add(user);
+            }
+        });
+
+
+        return users;
     }
 
-    @Transactional
     public ApiResponse addNewFriend(Long friendId) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -92,10 +117,71 @@ public class UserService {
         User newFriend = userRepository.findById(friendId)
                 .orElseThrow(() -> new BusinessException("User friend not found", HttpStatus.NOT_FOUND));
 
-        user.getRequests().add(newFriend);
+        newFriend.getRequests().add(user);
 
         userRepository.save(newFriend);
 
         return new ApiResponse(true, "Request send successfully");
+    }
+
+    public List<User> getAllFriendRequests() {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(userEmail).get();
+        user.getRequests().forEach(user1 -> {
+            user1.setFriends(null);
+            user1.setRequests(null);
+        });
+        return user.getRequests();
+    }
+
+    public ApiResponse acceptFriendRequest(Long id) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(userEmail).get();
+
+        User newFriend = userRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("User friend not found", HttpStatus.NOT_FOUND));
+
+        List<User> newRequests = new ArrayList<>();
+        user.getRequests().forEach(user1 -> {
+            if (!user1.getId().equals(id)) {
+                newRequests.add(user1);
+            }
+        });
+
+        user.setRequests(null);
+        user.setRequests(newRequests);
+
+        user.getFriends().add(newFriend);
+        newFriend.getFriends().add(user);
+
+        userRepository.save(user);
+        userRepository.save(newFriend);
+
+        return new ApiResponse(true, "User accepted successfully");
+    }
+
+    public ApiResponse rejectFriendRequest(Long id) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(userEmail).get();
+
+        User newFriend = userRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("User friend not found", HttpStatus.NOT_FOUND));
+
+        List<User> newRequests = new ArrayList<>();
+        user.getRequests().forEach(user1 -> {
+            if (!user1.getId().equals(id)) {
+                newRequests.add(user1);
+            }
+        });
+
+        user.setRequests(null);
+        user.setRequests(newRequests);
+        userRepository.save(user);
+
+        return new ApiResponse(true, "User rejected successfully");
+
     }
 }

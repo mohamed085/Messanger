@@ -36,4 +36,13 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "requests_id")
     )
     private List<User> requests;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }
