@@ -33,7 +33,7 @@ public class UserController {
     public ResponseEntity<?> addNewFriend(@PathVariable("id") Long friendId) {
         return ResponseEntity
                 .ok()
-                .body(userService.getAllUsers());
+                .body(userService.addNewFriend(friendId));
     }
 
 

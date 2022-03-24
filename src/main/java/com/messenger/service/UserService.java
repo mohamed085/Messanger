@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -82,12 +83,14 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    @Transactional
     public ApiResponse addNewFriend(Long friendId) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository.findByEmail(userEmail).get();
 
-        User newFriend = userRepository.getById(friendId);
+        User newFriend = userRepository.findById(friendId)
+                .orElseThrow(() -> new BusinessException("User friend not found", HttpStatus.NOT_FOUND));
 
         user.getRequests().add(newFriend);
 
