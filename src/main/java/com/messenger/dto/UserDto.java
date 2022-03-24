@@ -16,4 +16,5 @@ public class UserDto {
     private MultipartFile avatar_file;
     private String about;
     private List<User> friends;
+    private List<User> requests;
 }

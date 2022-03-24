@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
@@ -16,11 +15,27 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("")
+    @GetMapping("/account")
     public ResponseEntity<?> getUserDetails() {
         return ResponseEntity
                 .ok()
                 .body(userService.getAuthenticatedAccount());
     }
+
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity
+                .ok()
+                .body(userService.getAllUsers());
+    }
+
+    @GetMapping("/add-friend/{id}")
+    public ResponseEntity<?> addNewFriend(@PathVariable("id") Long friendId) {
+        return ResponseEntity
+                .ok()
+                .body(userService.getAllUsers());
+    }
+
+
 
 }

@@ -15,6 +15,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -76,4 +78,21 @@ public class UserService {
         return user;
     }
 
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public ApiResponse addNewFriend(Long friendId) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(userEmail).get();
+
+        User newFriend = userRepository.getById(friendId);
+
+        user.getRequests().add(newFriend);
+
+        userRepository.save(newFriend);
+
+        return new ApiResponse(true, "Request send successfully");
+    }
 }

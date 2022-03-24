@@ -29,4 +29,11 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "friend_id")
     )
     private List<User> friends;
+
+    @ManyToMany
+    @JoinTable(name = "user_requests",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "requests_id")
+    )
+    private List<User> requests;
 }
