@@ -2,24 +2,32 @@ package com.messenger.service;
 
 import com.messenger.dto.UserDto;
 import com.messenger.exception.BusinessException;
-import com.messenger.model.User;
+import com.messenger.domain.User;
 import com.messenger.payload.ApiResponse;
 import com.messenger.repository.UserRepository;
 import com.messenger.util.FileUploadUtil;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
+    private final AuthenticationManager authenticationManager;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenService = tokenService;
+        this.authenticationManager = authenticationManager;
     }
 
     public ApiResponse register(UserDto userDto) {
@@ -50,4 +58,22 @@ public class UserService {
             throw new BusinessException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    public String login(String email, String password) {
+
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        String token = tokenService.generateToken(authenticate);
+
+        return token;
+    }
+
+    public User getAuthenticatedAccount() {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(userEmail).get();
+        return user;
+    }
+
 }

@@ -28,10 +28,4 @@ public class MvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:/" + absolutePath + "/");
 
     }
-
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
 }

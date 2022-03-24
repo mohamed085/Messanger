@@ -1,4 +1,4 @@
-package com.messenger.model;
+package com.messenger.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

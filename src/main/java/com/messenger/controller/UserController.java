@@ -1,14 +1,13 @@
 package com.messenger.controller;
 
 import com.messenger.dto.UserDto;
+import com.messenger.payload.LoginResponse;
 import com.messenger.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
@@ -17,12 +16,11 @@ public class UserController {
         this.userService = userService;
     }
 
-    @RequestMapping(value = "/register",  method = RequestMethod.POST, consumes = {"multipart/form-data"})
-    public ResponseEntity<?> addChipType(@ModelAttribute UserDto userDto) {
-
+    @GetMapping("")
+    public ResponseEntity<?> getUserDetails() {
         return ResponseEntity
                 .ok()
-                .body(userService.register(userDto));
+                .body(userService.getAuthenticatedAccount());
     }
 
 }

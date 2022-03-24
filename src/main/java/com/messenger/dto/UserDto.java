@@ -1,6 +1,6 @@
 package com.messenger.dto;
 
-import com.messenger.model.User;
+import com.messenger.domain.User;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
