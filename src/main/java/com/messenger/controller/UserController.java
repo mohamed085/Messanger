@@ -43,6 +43,13 @@ public class UserController {
                 .body(userService.getAllFriendRequests());
     }
 
+    @GetMapping("/find-requested-send")
+    public ResponseEntity<?> getRequestedSend() {
+        return ResponseEntity
+                .ok()
+                .body(userService.getRequestedSend());
+    }
+
     @GetMapping("/accept-requests/{id}")
     public ResponseEntity<?> acceptFriendRequest(@PathVariable("id") Long friendId) {
         return ResponseEntity

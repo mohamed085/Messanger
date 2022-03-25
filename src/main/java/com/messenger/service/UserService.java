@@ -109,6 +109,23 @@ public class UserService {
         return users;
     }
 
+    public List<User> getRequestedSend() {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User loginUser = userRepository.findByEmail(userEmail).get();
+
+        List<User> users = new ArrayList<>();
+
+        userRepository.findRequestedSend(loginUser.getId()).forEach(user -> {
+            user.setFriends(null);
+            user.setRequests(null);
+
+            users.add(user);
+        });
+
+        return users;
+    }
+
     @Transactional
     public ApiResponse addNewFriend(Long friendId) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();

@@ -24,4 +24,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
             countQuery = "SELECT count(*) FROM USER",
             nativeQuery = true)
     List<User> discoverNewUsers(Long id);
+
+    @Query(value = "SELECT * \n" +
+            "FROM user As user\n" +
+            "LEFT JOIN user_requests As requests ON requests.user_id = user.id AND requests.requests_id = ?1 \n" +
+            "WHERE requests.user_id is not null",
+            countQuery = "SELECT count(*) FROM USER",
+            nativeQuery = true)
+    List<User> findRequestedSend(Long id);
 }
