@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -28,14 +29,14 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "friend_id")
     )
-    private List<User> friends;
+    private Set<User> friends;
 
     @ManyToMany
     @JoinTable(name = "user_requests",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "requests_id")
     )
-    private List<User> requests;
+    private Set<User> requests;
 
     @Override
     public String toString() {

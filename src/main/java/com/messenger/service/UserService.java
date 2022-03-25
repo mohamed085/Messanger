@@ -17,7 +17,9 @@ import org.springframework.security.core.Authentication;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -97,18 +99,17 @@ public class UserService {
 
         List<User> users = new ArrayList<>();
 
-        userRepository.findAll().forEach(user -> {
+        userRepository.discoverNewUsers(loginUser.getId()).forEach(user -> {
             user.setFriends(null);
             user.setRequests(null);
-            if (!user.getId().equals(loginUser.getId())) {
-                users.add(user);
-            }
-        });
 
+            users.add(user);
+        });
 
         return users;
     }
 
+    @Transactional
     public ApiResponse addNewFriend(Long friendId) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -117,6 +118,12 @@ public class UserService {
         User newFriend = userRepository.findById(friendId)
                 .orElseThrow(() -> new BusinessException("User friend not found", HttpStatus.NOT_FOUND));
 
+        newFriend.getRequests().forEach(user1 -> {
+            if (user1.getId().equals(user.getId())) {
+                throw new BusinessException("User already added", HttpStatus.BAD_REQUEST);
+            }
+        });
+
         newFriend.getRequests().add(user);
 
         userRepository.save(newFriend);
@@ -124,7 +131,7 @@ public class UserService {
         return new ApiResponse(true, "Request send successfully");
     }
 
-    public List<User> getAllFriendRequests() {
+    public Set<User> getAllFriendRequests() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository.findByEmail(userEmail).get();
@@ -143,23 +150,26 @@ public class UserService {
         User newFriend = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("User friend not found", HttpStatus.NOT_FOUND));
 
-        List<User> newRequests = new ArrayList<>();
-        user.getRequests().forEach(user1 -> {
-            if (!user1.getId().equals(id)) {
-                newRequests.add(user1);
-            }
-        });
+        if (user.getRequests().contains(newFriend)) {
+            Set<User> newRequests = new HashSet<>();
+            user.getRequests().forEach(user1 -> {
+                if (!user1.getId().equals(newFriend.getId())) {
+                    newRequests.add(user1);
+                }
+            });
 
-        user.setRequests(null);
-        user.setRequests(newRequests);
+            user.setRequests(null);
+            user.setRequests(newRequests);
+            user.getFriends().add(newFriend);
 
-        user.getFriends().add(newFriend);
-        newFriend.getFriends().add(user);
+            newFriend.getFriends().add(user);
+            userRepository.save(user);
+            userRepository.save(newFriend);
 
-        userRepository.save(user);
-        userRepository.save(newFriend);
+            return new ApiResponse(true, "User accepted successfully");
+        }
 
-        return new ApiResponse(true, "User accepted successfully");
+        throw new BusinessException("User not request you", HttpStatus.BAD_REQUEST);
     }
 
     public ApiResponse rejectFriendRequest(Long id) {
@@ -170,7 +180,7 @@ public class UserService {
         User newFriend = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("User friend not found", HttpStatus.NOT_FOUND));
 
-        List<User> newRequests = new ArrayList<>();
+        Set<User> newRequests = new HashSet<>();
         user.getRequests().forEach(user1 -> {
             if (!user1.getId().equals(id)) {
                 newRequests.add(user1);
